@@ -12,5 +12,5 @@ Then just run `cmake .` and then `make -j4` and the executable will be created.
 # How to run
 To run the executable on the provided example data, simply run:
 ```bash 
-./sfm ExampleData/data_pumpkin 1 100 196 8 > results
+./sfm ExampleData/data_church 1 100 92 8 > results
 ```
