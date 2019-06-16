@@ -1,0 +1,17 @@
+project(sfm)
+cmake_minimum_required(VERSION 3.14)
+set (CMAKE_CXX_STANDARD 17)
+
+if (APPLE)
+    set(OpenMP_C_FLAGS "-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
+    set(OpenMP_C_LIB_NAMES "omp")
+    set(OpenMP_CXX_FLAGS "-Xpreprocessor -fopenmp -I/usr/local/opt/libomp/include")
+    set(OpenMP_CXX_LIB_NAMES "omp")
+    set(OpenMP_omp_LIBRARY "/usr/local/opt/libomp/lib/libomp.dylib")
+endif()
+
+find_package(Ceres REQUIRED)
+find_package(OpenMP REQUIRED) # Find the package
+include_directories(${CERES_INCLUDE_DIRS})
+add_executable(sfm SfMMain.cpp SfM.cpp p5p_radial.cpp closed.cpp)
+target_link_libraries(sfm ${CERES_LIBRARIES} ${OpenMP_CXX_LIBRARIES})
