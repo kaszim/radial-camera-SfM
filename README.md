@@ -3,9 +3,9 @@ A proof of concept SfM pipeline using the radial camera model
 
 # How to build
 You will need the following packages on your system:
-* ceres-solver
-* eigen3
-* libomp
+* ceres-solver (tested with 1.14.0)
+* eigen3 (tested with 3.3.7)
+* libomp (tested with 8.0.0)
 
 Then just run `cmake .` and then `make -j4` and the executable will be created.
 
