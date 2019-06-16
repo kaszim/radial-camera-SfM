@@ -13,4 +13,5 @@ Then just run `cmake .` and then `make -j4` and the executable will be created.
 To run the executable on the provided example data, simply run:
 ```bash 
 ./sfm ExampleData/data_church 1 100 92 8 > results
+./sfm $data_folder $threshhold_RANSAC $iterations_RANSAC $num_images $min_num_features
 ```
