@@ -203,10 +203,8 @@ public:
     void print_views() const;
 
     void initializePoints(const std::vector<WorldPoint>& initial_points);
-    void initialize(Matrix<double, 3, 4>& pose1, Matrix<double, 3, 4>& pose2);
     void print_currentPoints();
     void print_currentPoses();
-    void print_finalPoints() const;
 
     int get_nimages() const;
     int get_npoints() const;
@@ -218,7 +216,6 @@ public:
     int determineNextCandidate();
     void ransacPose(const int view, const double threshold, const int iterations);
     void triangulate_new_points();
-    void triangulate_all_points();
     void pointsBA();
     void posesBA();
     void fullBA();

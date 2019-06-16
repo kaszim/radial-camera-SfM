@@ -37,38 +37,6 @@ void SfM::initializePoints(const std::vector<WorldPoint>& initial_points) {
     }
 }
 
-// Initializes the pipeline with two poses for view 0 and 1
-void SfM::initialize(Matrix<double, 3, 4>& pose1, Matrix<double, 3, 4>& pose2) {
-    auto view1 = _current_views[0];
-    auto view2 = _current_views[1];
-
-    for (auto&& match : _matches[view1][view2]) {
-        auto&& f1 = match.first;
-        auto&& f2 = match.second;
-        MatrixXd A(4, 3);
-        MatrixXd b(4, 1);
-        A(0,0) = pose1(2,0) * f1->point(0) - pose1(0,0); // P_31*x - P_11 
-        A(0,1) = pose1(2,1) * f1->point(0) - pose1(0,1); // P_32*x - P_12 
-        A(0,2) = pose1(2,2) * f1->point(0) - pose1(0,2); // P_33*x - P_13 
-        b(0,0) = pose1(2,3) * f1->point(0) - pose1(0,3); // P_34*x - P_14 
-        A(1,0) = pose1(2,0) * f1->point(1) - pose1(1,0); // P_31*y - P_21
-        A(1,1) = pose1(2,1) * f1->point(1) - pose1(1,1); // P_32*y - P_22
-        A(1,2) = pose1(2,2) * f1->point(1) - pose1(1,2); // P_33*y - P_23
-        b(1,0) = pose1(2,3) * f1->point(1) - pose1(1,3); // P_34*y - P_24
-        A(2,0) = pose2(2,0) * f2->point(0) - pose2(0,0); // P_31*x - P_11
-        A(2,1) = pose2(2,1) * f2->point(0) - pose2(0,1); // P_32*x - P_12
-        A(2,2) = pose2(2,2) * f2->point(0) - pose2(0,2); // P_33*x - P_13
-        b(2,0) = pose2(2,3) * f2->point(0) - pose2(0,3); // P_34*x - P_14
-        A(3,0) = pose2(2,0) * f2->point(1) - pose2(1,0); // P_31*y - P_21
-        A(3,1) = pose2(2,1) * f2->point(1) - pose2(1,1); // P_32*y - P_22
-        A(3,2) = pose2(2,2) * f2->point(1) - pose2(1,2); // P_33*y - P_23
-        b(3,0) = pose2(2,3) * f2->point(1) - pose2(1,3); // P_34*y - P_24
-
-        MatrixXd point_3d = (A.transpose() * A).ldlt().solve(A.transpose() * b);
-        _points3D.emplace_back(WorldPoint{point_3d, f1->id});
-    }
-}
-
 void SfM::print_currentPoints() {
     std::sort(_points3D.begin(), _points3D.end(), [](auto&& a, auto&& b) {
         return a.id > b.id;
@@ -85,12 +53,6 @@ void SfM::print_currentPoses() {
     for(auto i = 0; i < get_nviews(); ++i){
         std::cerr << _poses[i].id << std::endl;
         std::cout << _poses[i].pose << std::endl;
-    }
-}
-
-void SfM::print_finalPoints() const {
-    for(auto i = 0; i < _all_points3D.size(); ++i){
-        std::cout << _all_points3D[i].point(0) << ", " << _all_points3D[i].point(1) << ", " << _all_points3D[i].point(2) << ", " << _points3D[i].id<< std::endl;
     }
 }
 
@@ -279,35 +241,6 @@ void SfM::triangulate_new_points() {
             // }
         }
     }
-}
-
-// triangulate all possible points
-void SfM::triangulate_all_points(){
-    for (auto&& pair : _correspondences) {
-        auto&& track = pair.second;
-        auto sizeTrack = static_cast<int>(track.size());
-        if (sizeTrack > 3) {
-            // Enough features to triangulate
-            MatrixXd A(sizeTrack, 3);
-            MatrixXd b(sizeTrack, 1);
-            for (int i = 0; i < sizeTrack; ++i) {
-                auto&& point = track[i];
-                auto&& pose = get_pose(point.view_id);
-                auto feature = point.feature->point;
-                feature(0, 0) = -point.feature->point(1, 0);
-                feature(1, 0) = point.feature->point(0, 0); // -y, x
-                auto featureT = feature.transpose();
-                auto M = featureT * pose.pose;
-                for (int y = 0; y < 3; ++y) {
-                    A(i, y) = M(0, y);
-                }
-                b(i, 0) = -M(0, 3);
-            }
-            MatrixXd point_3d = (A.transpose() * A).ldlt().solve(A.transpose() * b);
-            _all_points3D.emplace_back(WorldPoint{point_3d, pair.first});
-        }
-    }
-
 }
 
 // Returns a param that is ceres friendly
